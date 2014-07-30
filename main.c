@@ -35,24 +35,24 @@ void func1( cont_t* k )
 {
 	printf( "func1\n" );
 
-	cont_t nextk = { k->kfn, k->arg + 1.1 };
-	k->kfn( &nextk );
+	k->arg = k->arg + 1.1;
+	k->kfn( k );
 }
 
 void func2( cont_t* k )
 {
 	printf( "func2\n" );
 
-	cont_t nextk = { k->kfn, k->arg + 2.2 };
-	k->kfn( &nextk );
+	k->arg = k->arg + 2.2;
+	k->kfn( k );
 }
 
 void func3( cont_t* k )
 {
 	printf( "func3\n" );
 
-	cont_t nextk = { k->kfn, k->arg + 3.3 };
-	k->kfn( &nextk );
+	k->arg = k->arg + 3.3;
+	k->kfn( k );
 }
 
 
@@ -64,14 +64,14 @@ void f1contfn( cont_t* k )
 
 void f2contfn( cont_t* k )
 {
-	cont_t k1 = { f1contfn, k->arg };
-	func1( &k1 );
+	k->kfn = f1contfn;
+	func1( k );
 }
 
 void f3contfn( cont_t* k )
 {
-	cont_t k2 = { f2contfn, k->arg };
-	func2( &k2 );
+	k->kfn = f2contfn;
+	func2( k );
 }
 
 
