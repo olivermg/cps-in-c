@@ -1,5 +1,14 @@
 
 *.swp
+*~
+
 *.o
+*.ll
+*.bc
+
 main
+longjmp
+trampoline
+
+core
 

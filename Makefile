@@ -1,13 +1,27 @@
 CC = clang
+OPT = opt
+
 
 .PHONY: clean
 
-main: main.o
+
+main: main.opt.bc
 	$(CC) -Wall -g -o $@ $<
 
-%.o: %.c
-	$(CC) -Wall -g -o $@ -c $<
+longjmp: longjmp.opt.bc
+	$(CC) -Wall -g -o $@ $<
+
+trampoline: trampoline.opt.bc
+	$(CC) -Wall -g -o $@ $<
+
+
+%.opt.bc: %.bc
+	$(OPT) -mem2reg -tailcallelim -o $@ $<
+
+%.bc: %.c
+	$(CC) -Wall -g -emit-llvm -o $@ -c $<
+
 
 clean:
-	rm -vf *.o main
+	rm -vf *.o *.ll *.bc main longjmp trampoline
 

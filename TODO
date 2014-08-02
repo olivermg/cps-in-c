@@ -1,0 +1,15 @@
+
+- implement continuation passing style
+- avoid stack overflow
+- use trampoline
+- tail call optimization
+- multiple recursion possible (e.g. fibonacci)
+- eliminate recursions
+- convert calls to parameterless lambdas into gotos
+- convert closures to function calls (by introducing data structure)
+
+probable order of steps:
+- eliminate lambda parameters
+- eliminate recursion by replacing call by goto
+- 
+
