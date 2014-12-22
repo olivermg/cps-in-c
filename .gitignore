@@ -9,6 +9,7 @@
 main
 longjmp
 trampoline
+simplejmp
 
 core
 
