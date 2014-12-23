@@ -1,68 +1,69 @@
-#include <setjmp.h>
 #include <stdio.h>
 
-#define CALL(fn)	{ nextfn = &fn; return 1; }
-#define RET()		return 0
+#define CALL(fn,arg)	{ ret_t r = { CALL, { { fn, arg } } }; return r; }
+#define RET(rv)		{ ret_t r = { RETURN, { .retval = rv } }; return r; }
 
-typedef int (*func_p)();
+typedef struct _ret_t ret_t;
+typedef ret_t (*func_p)( int );
 
-//static jmp_buf jb;
-static unsigned long callcnt = 0;
-static func_p nextfn;
+typedef enum {
+	CALL,
+	RETURN
+} action_t;
+
+struct _ret_t {
+	action_t action;
+	union {
+		struct {
+			func_p fn;
+			int arg;
+		};
+		int retval;
+	};
+};
+
+//static unsigned long callcnt = 0;
 
 
 // library code:
 
-/*
-void call( func_p fn )
+int run_trampoline( ret_t action )
 {
-	if ( ! setjmp( jb ) ) {
-		fn();
-	}
-}
-
-void ret()
-{
-	longjmp( jb, 1 );
-}
-*/
-
-void run_trampoline()
-{
-	int r = 0;
-
-	do {
-		r = nextfn();
-	} while (r);
+	while( CALL == action.action ) {
+		action = action.fn( action.arg );
+	};
+	return action.retval;
 }
 
 
 // user code:
 
-int fn1();
-int fn2();
+ret_t fn1( int );
+ret_t fn2( int );
 
-int fn2()
+ret_t fn2( int arg )
 {
-	printf("2:%ld\n", callcnt++);
-	CALL(fn1);
+	printf("2:%d\n", arg);
+	CALL(fn1,arg+1);
 }
 
-int fn1()
+ret_t fn1( int arg )
 {
-	printf("1:%ld\n", callcnt++);
+	printf("1:%d\n", arg);
 
-	if (callcnt < 1000000) {
-		CALL(fn2);
+	if (arg < 1000000) {
+		CALL(fn2,arg+1);
 	} else {
-		RET();
+		RET(arg);
 	}
 }
 
 int main()
 {
-	nextfn = &fn1;
-	run_trampoline();
+	ret_t action = { CALL, { { &fn1, 0 } } };
+	int retval = run_trampoline( action );
+
+	printf("final return value: %d\n", retval);
 
 	return 0;
 }
