@@ -3,6 +3,7 @@
 #define DEFCALL(fn,arg)	(ret_t){ CALL, .call = { fn, arg } }
 #define DEFRET(rv)		(ret_t){ RETURN, .retval = rv }
 
+// these can only be used for tailcalls:
 #define CALL(fn,arg)	return DEFCALL(fn,arg);
 #define RET(rv)			return DEFRET(rv);
 
@@ -30,21 +31,24 @@ struct _ret_t {
 // library code:
 //
 
-// trampoline runner function:
-int run_trampoline( ret_t action )
-{
-	while ( CALL == action.action ) {
-		action = action.call.fn( action.call.arg );
-	};
-	return action.retval;
-}
-
 // language runtime function for invoking closures etc.:
-int invoke( func_p fn, int arg )
+ret_t invoke( func_p fn, int arg )
 {
 	// ...runtime logic to wrap arguments into environment, etc...
 
-	return run_trampoline( DEFCALL( fn, arg ) );
+	return fn( arg /* env... */ );
+}
+
+// trampoline runner function:
+int invoke_trampoline( func_p fn, int arg )
+{
+	ret_t action = DEFCALL( fn, arg );
+
+	while ( CALL == action.action ) {
+		action = invoke( action.call.fn, action.call.arg );
+	};
+
+	return action.retval;
 }
 
 
@@ -74,7 +78,7 @@ ret_t fn1( int arg )
 
 int main()
 {
-	int retval = invoke( &fn1, 0 );
+	int retval = invoke_trampoline( &fn1, 0 );
 
 	printf("final return value: %d\n", retval);
 
