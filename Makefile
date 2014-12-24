@@ -11,6 +11,9 @@ main: main.opt.bc
 longjmp: longjmp.opt.bc
 	$(CC) -Wall -g -o $@ $<
 
+simplejmp: simplejmp.c
+	$(CC) -Wall -g -o $@ $<
+
 trampoline: trampoline.opt.bc
 	$(CC) -Wall -g -o $@ $<
 
