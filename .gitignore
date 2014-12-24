@@ -10,6 +10,7 @@ main
 longjmp
 trampoline
 simplejmp
+simplejmp.dSYM/
 
 core
 
