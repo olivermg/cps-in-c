@@ -25,21 +25,32 @@ struct _ret_t {
 	};
 };
 
-//static unsigned long callcnt = 0;
 
-
+//
 // library code:
+//
 
+// trampoline runner function:
 int run_trampoline( ret_t action )
 {
-	while( CALL == action.action ) {
+	while ( CALL == action.action ) {
 		action = action.call.fn( action.call.arg );
 	};
 	return action.retval;
 }
 
+// language runtime function for invoking closures etc.:
+int invoke( func_p fn, int arg )
+{
+	// ...runtime logic to wrap arguments into environment, etc...
 
+	return run_trampoline( DEFCALL( fn, arg ) );
+}
+
+
+//
 // user code:
+//
 
 ret_t fn1( int );
 ret_t fn2( int );
@@ -47,7 +58,7 @@ ret_t fn2( int );
 ret_t fn2( int arg )
 {
 	printf("2:%d\n", arg);
-	CALL(fn1,arg+1);
+	CALL( &fn1, arg + 1 );
 }
 
 ret_t fn1( int arg )
@@ -55,16 +66,15 @@ ret_t fn1( int arg )
 	printf("1:%d\n", arg);
 
 	if (arg < 1000000) {
-		CALL(fn2,arg+1);
+		CALL( &fn2, arg + 1 );
 	} else {
-		RET(arg);
+		RET( arg );
 	}
 }
 
 int main()
 {
-	ret_t action = DEFCALL(&fn1, 0);
-	int retval = run_trampoline( action );
+	int retval = invoke( &fn1, 0 );
 
 	printf("final return value: %d\n", retval);
 
