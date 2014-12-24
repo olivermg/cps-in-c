@@ -1,7 +1,10 @@
 #include <stdio.h>
 
-#define CALL(fn,arg)	{ ret_t r = { CALL, { { fn, arg } } }; return r; }
-#define RET(rv)		{ ret_t r = { RETURN, { .retval = rv } }; return r; }
+#define DEFCALL(fn,arg)	{ CALL, .call = { fn, arg } }
+#define DEFRET(rv)		{ RETURN, .retval = rv }
+
+#define CALL(fn,arg)	{ ret_t _r = DEFCALL(fn,arg); return _r; }
+#define RET(rv)			{ ret_t _r = DEFRET(rv); return _r; }
 
 typedef struct _ret_t ret_t;
 typedef ret_t (*func_p)( int );
@@ -17,7 +20,7 @@ struct _ret_t {
 		struct {
 			func_p fn;
 			int arg;
-		};
+		} call;
 		int retval;
 	};
 };
@@ -30,7 +33,7 @@ struct _ret_t {
 int run_trampoline( ret_t action )
 {
 	while( CALL == action.action ) {
-		action = action.fn( action.arg );
+		action = action.call.fn( action.call.arg );
 	};
 	return action.retval;
 }
@@ -60,7 +63,7 @@ ret_t fn1( int arg )
 
 int main()
 {
-	ret_t action = { CALL, { { &fn1, 0 } } };
+	ret_t action = DEFCALL(&fn1, 0);
 	int retval = run_trampoline( action );
 
 	printf("final return value: %d\n", retval);
