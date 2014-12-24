@@ -1,10 +1,10 @@
 #include <stdio.h>
 
-#define DEFCALL(fn,arg)	{ CALL, .call = { fn, arg } }
-#define DEFRET(rv)		{ RETURN, .retval = rv }
+#define DEFCALL(fn,arg)	(ret_t){ CALL, .call = { fn, arg } }
+#define DEFRET(rv)		(ret_t){ RETURN, .retval = rv }
 
-#define CALL(fn,arg)	{ ret_t _r = DEFCALL(fn,arg); return _r; }
-#define RET(rv)			{ ret_t _r = DEFRET(rv); return _r; }
+#define CALL(fn,arg)	return DEFCALL(fn,arg);
+#define RET(rv)			return DEFRET(rv);
 
 typedef struct _ret_t ret_t;
 typedef ret_t (*func_p)( int );
